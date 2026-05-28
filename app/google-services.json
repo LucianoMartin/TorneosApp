@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "423148994106",
+    "project_id": "torneos-ce493",
+    "storage_bucket": "torneos-ce493.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:423148994106:android:2d3eeb6340d8179800bf03",
+        "android_client_info": {
+          "package_name": "com.tpgrupal.appsmoviles"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDooq9hS_o1Imd9ot2PXWe7TJKaEQ0c54E"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
