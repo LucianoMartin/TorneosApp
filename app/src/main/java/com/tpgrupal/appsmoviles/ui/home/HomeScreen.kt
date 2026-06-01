@@ -1,4 +1,4 @@
-package com.tpgrupal.appsmoviles.ui
+package com.tpgrupal.appsmoviles.ui.home
 
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable

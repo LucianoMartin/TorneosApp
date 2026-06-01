@@ -3,6 +3,7 @@ package com.tpgrupal.appsmoviles.ui
 import androidx.compose.runtime.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.tpgrupal.appsmoviles.ui.home.HomeScreen
 import com.tpgrupal.appsmoviles.ui.login.LoginScreen
 
 @Composable
