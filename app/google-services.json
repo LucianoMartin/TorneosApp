@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "423148994106",
-    "project_id": "torneos-ce493",
-    "storage_bucket": "torneos-ce493.firebasestorage.app"
+    "project_number": "363858583950",
+    "project_id": "torneosapp-28dbf",
+    "storage_bucket": "torneosapp-28dbf.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:423148994106:android:2d3eeb6340d8179800bf03",
+        "mobilesdk_app_id": "1:363858583950:android:f9a4f47438e5d1a4ac44df",
         "android_client_info": {
           "package_name": "com.tpgrupal.appsmoviles"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyDooq9hS_o1Imd9ot2PXWe7TJKaEQ0c54E"
+          "current_key": "AIzaSyDDUZAGOv0_dulODbkb7j99XdnJ1dWkfio"
         }
       ],
       "services": {

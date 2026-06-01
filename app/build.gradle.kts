@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
 
-    //Para el loggin
+    // Firebase
     id("com.google.gms.google-services")
 }
 
@@ -44,7 +44,6 @@ android {
 }
 
 dependencies {
-    //Para el loggin
     // BOM de Firebase: sincroniza las versiones de todos los SDKs
     implementation(platform("com.google.firebase:firebase-bom:33.0.0"))
     implementation("com.google.firebase:firebase-auth")
@@ -53,7 +52,6 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     // Compose
     implementation("androidx.compose.material3:material3")
-    //
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
