@@ -68,6 +68,30 @@ class TorneoRepository {
         }
     }
 
+    fun observarTorneos(
+        onChange: (List<Torneo>) -> Unit
+    ) {
+
+        db.collection("torneos")
+            .addSnapshotListener { snapshot, error ->
+
+                if (error != null) {
+                    error.printStackTrace()
+                    return@addSnapshotListener
+                }
+
+                val torneos =
+                    snapshot?.documents?.mapNotNull { document ->
+
+                        document.toObject(Torneo::class.java)
+                            ?.copy(id = document.id)
+
+                    } ?: emptyList()
+
+                onChange(torneos)
+            }
+    }
+
     suspend fun agregarFavorito(
         torneoId: String,
         usuarioId: String

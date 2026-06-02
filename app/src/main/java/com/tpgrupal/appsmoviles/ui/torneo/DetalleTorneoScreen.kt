@@ -29,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
@@ -127,7 +128,7 @@ fun DetalleTorneoScreen(
                     ) {
 
                         Icon(
-                            Icons.Default.ArrowBack,
+                            Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Volver"
                         )
                     }
@@ -383,10 +384,7 @@ fun DetalleTorneoScreen(
                         )
 
                         Text(
-                            if (t.descripcion.isBlank())
-                                "Sin descripción"
-                            else
-                                t.descripcion
+                            t.descripcion.ifBlank { "Sin descripción" }
                         )
                     }
                 }
@@ -424,10 +422,7 @@ fun DetalleTorneoScreen(
                         )
 
                         Text(
-                            if (t.requisitos.isBlank())
-                                "Sin requisitos"
-                            else
-                                t.requisitos
+                            t.requisitos.ifBlank { "Sin requisitos" }
                         )
                     }
                 }

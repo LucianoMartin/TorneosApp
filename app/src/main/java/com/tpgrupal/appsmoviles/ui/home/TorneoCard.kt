@@ -15,6 +15,12 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
+import com.tpgrupal.appsmoviles.ui.utils.textoAmigable
+import com.tpgrupal.appsmoviles.data.model.enums.EstadoTorneo
+import com.tpgrupal.appsmoviles.ui.theme.ErrorRed
+import com.tpgrupal.appsmoviles.ui.theme.NeonBlue
+import com.tpgrupal.appsmoviles.ui.theme.SuccessGreen
+import com.tpgrupal.appsmoviles.ui.theme.TextPrimary
 
 @Composable
 fun TorneoCard(
@@ -98,7 +104,9 @@ fun TorneoCard(
                 modifier = Modifier.height(12.dp)
             )
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
                 Icon(
                     imageVector = Icons.Default.LocationOn,
@@ -117,7 +125,9 @@ fun TorneoCard(
                 modifier = Modifier.height(8.dp)
             )
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
                 Icon(
                     imageVector = Icons.Default.Groups,
@@ -138,10 +148,27 @@ fun TorneoCard(
                 modifier = Modifier.height(8.dp)
             )
 
-            Text(
-                text = "❤️ ${torneo.favoritos.size}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+
+                Spacer(
+                    modifier = Modifier.width(6.dp)
+                )
+
+                Text(
+                    text = if (torneo.favoritos.size == 1)
+                        "1 favorito"
+                    else
+                        "${torneo.favoritos.size} favoritos"
+                )
+            }
 
             Spacer(
                 modifier = Modifier.height(12.dp)
@@ -149,8 +176,26 @@ fun TorneoCard(
 
             AssistChip(
                 onClick = {},
+
+                colors = AssistChipDefaults.assistChipColors(
+
+                    containerColor = when (torneo.estado) {
+
+                        EstadoTorneo.INSCRIPCION ->
+                            SuccessGreen
+
+                        EstadoTorneo.EN_CURSO ->
+                            NeonBlue
+
+                        EstadoTorneo.FINALIZADO ->
+                            ErrorRed
+                    },
+
+                    labelColor = TextPrimary
+                ),
+
                 label = {
-                    Text(torneo.estado.name)
+                    Text(torneo.estado.textoAmigable())
                 }
             )
         }
