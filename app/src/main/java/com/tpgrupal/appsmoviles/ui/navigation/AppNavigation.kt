@@ -1,9 +1,15 @@
 package com.tpgrupal.appsmoviles.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.compose.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.home.HomeScreen
 import com.tpgrupal.appsmoviles.ui.login.LoginScreen
+import com.tpgrupal.appsmoviles.ui.profile.FavoritosScreen
+import com.tpgrupal.appsmoviles.ui.profile.PerfilScreen
 import com.tpgrupal.appsmoviles.ui.torneo.CrearTorneoScreen
 import com.tpgrupal.appsmoviles.ui.torneo.DetalleTorneoScreen
 
@@ -37,8 +43,52 @@ fun AppNavigation(
         composable("home") {
 
             HomeScreen(
+
                 onCrearTorneo = {
                     navController.navigate("crear_torneo")
+                },
+
+                onTorneoClick = { torneoId ->
+                    navController.navigate(
+                        "detalle_torneo/$torneoId"
+                    )
+                },
+
+                onPerfilClick = {
+                    navController.navigate("perfil")
+                }
+            )
+        }
+
+        composable("perfil") {
+
+            PerfilScreen(
+
+                onVolver = {
+                    navController.popBackStack()
+                },
+
+                onFavoritosClick = {
+                    navController.navigate("favoritos")
+                },
+
+                onCerrarSesion = {
+
+                    Firebase.auth.signOut()
+
+                    navController.navigate("login") {
+                        popUpTo(0)
+                    }
+                }
+            )
+        }
+
+        composable("favoritos") {
+
+            FavoritosScreen(
+
+                onVolver = {
+                    navController.popBackStack()
                 },
 
                 onTorneoClick = { torneoId ->

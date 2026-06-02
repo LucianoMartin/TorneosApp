@@ -1,10 +1,10 @@
 package com.tpgrupal.appsmoviles.ui.components
-
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -15,6 +15,7 @@ fun AppToolbar(
     titulo: String,
 
     onPerfilClick: () -> Unit = {}
+
 ) {
 
     var mostrarMenu by remember {
@@ -24,8 +25,25 @@ fun AppToolbar(
     TopAppBar(
 
         title = {
-            Text(titulo)
+
+            Row {
+
+                Icon(
+                    imageVector = Icons.Default.EmojiEvents,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+
+                Text(
+                    text = "  $titulo",
+                    style = MaterialTheme.typography.titleLarge
+                )
+            }
         },
+
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
 
         actions = {
 
@@ -34,9 +52,11 @@ fun AppToolbar(
                     mostrarMenu = true
                 }
             ) {
+
                 Icon(
                     Icons.Default.AccountCircle,
-                    contentDescription = null
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
 

@@ -21,7 +21,8 @@ import com.tpgrupal.appsmoviles.ui.components.AppToolbar
 fun HomeScreen(
     viewModel: HomeViewModel = viewModel(),
     onCrearTorneo: () -> Unit,
-    onTorneoClick: (String) -> Unit
+    onTorneoClick: (String) -> Unit,
+    onPerfilClick: () -> Unit
 ) {
 
     val torneos by viewModel.torneos.collectAsState()
@@ -31,7 +32,8 @@ fun HomeScreen(
         topBar = {
 
             AppToolbar(
-                titulo = "Torneos"
+                titulo = "Torneos",
+                onPerfilClick = onPerfilClick
             )
         },
 
@@ -52,7 +54,12 @@ fun HomeScreen(
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize()
+                .fillMaxSize(),
+
+            contentPadding = PaddingValues(
+                top = 8.dp,
+                bottom = 80.dp
+            )
         ) {
             if (torneos.isEmpty()) {
 
@@ -75,8 +82,22 @@ fun HomeScreen(
 
                 TorneoCard(
                     torneo = torneo,
+
                     onClick = {
+                        println("ID TORNEO = ${torneo.id}")
                         onTorneoClick(torneo.id)
+                    },
+
+                    onFavoritoClick = {
+
+                        val usuarioId =
+                            Firebase.auth.currentUser?.uid
+                                ?: return@TorneoCard
+
+                        viewModel.toggleFavorito(
+                            torneo,
+                            usuarioId
+                        )
                     }
                 )
             }

@@ -22,12 +22,45 @@ class HomeViewModel : ViewModel() {
         cargarTorneos()
     }
 
-    private fun cargarTorneos() {
+    fun cargarTorneos() {
 
         viewModelScope.launch {
 
             _torneos.value =
                 repository.obtenerTorneos()
+        }
+    }
+
+    fun toggleFavorito(
+        torneo: Torneo,
+        usuarioId: String
+    ) {
+
+        viewModelScope.launch {
+
+            try {
+
+                if (torneo.favoritos.contains(usuarioId)) {
+
+                    repository.quitarFavorito(
+                        torneo.id,
+                        usuarioId
+                    )
+
+                } else {
+
+                    repository.agregarFavorito(
+                        torneo.id,
+                        usuarioId
+                    )
+                }
+
+                cargarTorneos()
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+            }
         }
     }
 }

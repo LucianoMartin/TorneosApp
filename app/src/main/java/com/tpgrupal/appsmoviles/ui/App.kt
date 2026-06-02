@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.navigation.AppNavigation
+import com.tpgrupal.appsmoviles.ui.theme.TorneosTheme
 
 @Composable
 fun App() {
@@ -30,7 +31,10 @@ fun App() {
         "login"
     }
 
-    AppNavigation(
-        startDestination = startDestination
-    )
+    TorneosTheme {
+
+        AppNavigation(
+            startDestination = startDestination
+        )
+    }
 }

@@ -13,6 +13,9 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
+import com.tpgrupal.appsmoviles.data.model.Usuario
 
 @Composable
 fun LoginScreen(
@@ -131,18 +134,53 @@ fun LoginScreen(
 
                 OutlinedButton(
                     onClick = {
+
                         if (!validar()) return@OutlinedButton
 
-                        Firebase.auth.createUserWithEmailAndPassword(email, password)
-                            .addOnSuccessListener {
+                        Firebase.auth
+                            .createUserWithEmailAndPassword(
+                                email,
+                                password
+                            )
+                            .addOnSuccessListener { result ->
+
+                                val firebaseUser =
+                                    result.user ?: return@addOnSuccessListener
+
+                                val usuario = Usuario(
+
+                                    uid = firebaseUser.uid,
+
+                                    nombre =
+                                        email.substringBefore("@"),
+
+                                    email = email,
+
+                                    avatarUrl = "",
+
+                                    puntos = 0,
+
+                                    favoritos = emptyList()
+                                )
+
+                                FirebaseFirestore
+                                    .getInstance()
+                                    .collection("usuarios")
+                                    .document(firebaseUser.uid)
+                                    .set(usuario)
+
                                 onRegister()
                             }
+
                             .addOnFailureListener {
+
                                 error = it.message
                             }
                     },
+
                     modifier = Modifier.fillMaxWidth()
                 ) {
+
                     Text("Crear cuenta")
                 }
             }
