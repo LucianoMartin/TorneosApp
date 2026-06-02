@@ -6,7 +6,7 @@ data class Torneo(
 
     val id: String = "",
     val nombre: String = "",
-    val juego: String = "",
+    val juegoId: String = "",
     val tipo: TipoTorneo = TipoTorneo.ELIMINACION_SIMPLE,
     val permiteEquipos: Boolean = false,
 
