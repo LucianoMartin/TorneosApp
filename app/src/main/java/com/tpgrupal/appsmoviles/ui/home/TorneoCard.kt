@@ -9,10 +9,12 @@ import com.tpgrupal.appsmoviles.data.model.Torneo
 
 @Composable
 fun TorneoCard(
-    torneo: Torneo
+    torneo: Torneo,
+    onClick: () -> Unit
 ) {
 
     Card(
+        onClick = onClick,
         modifier = Modifier
             .fillMaxWidth()
             .padding(8.dp)

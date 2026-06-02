@@ -7,7 +7,8 @@ import androidx.compose.ui.Modifier
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrearTorneoScreen(
+fun DetalleTorneoScreen(
+    torneoId: String,
     onVolver: () -> Unit
 ) {
 
@@ -17,19 +18,21 @@ fun CrearTorneoScreen(
 
             TopAppBar(
                 title = {
-                    Text("Crear torneo")
+                    Text("Detalle Torneo")
                 }
             )
         }
     ) { padding ->
 
-        Box(
+        Column(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
         ) {
 
-            Text("Pantalla Crear Torneo")
+            Text(
+                "ID torneo: $torneoId"
+            )
         }
     }
 }

@@ -19,7 +19,9 @@ import com.tpgrupal.appsmoviles.ui.components.AppToolbar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    viewModel: HomeViewModel = viewModel()
+    viewModel: HomeViewModel = viewModel(),
+    onCrearTorneo: () -> Unit,
+    onTorneoClick: (String) -> Unit
 ) {
 
     val torneos by viewModel.torneos.collectAsState()
@@ -36,10 +38,7 @@ fun HomeScreen(
         floatingActionButton = {
 
             FloatingActionButton(
-                onClick = {
-
-                    // navegar crear torneo
-                }
+                onClick = onCrearTorneo
             ) {
 
                 Icon(
@@ -74,7 +73,12 @@ fun HomeScreen(
 
             items(torneos) { torneo ->
 
-                TorneoCard(torneo)
+                TorneoCard(
+                    torneo = torneo,
+                    onClick = {
+                        onTorneoClick(torneo.id)
+                    }
+                )
             }
         }
     }
