@@ -2,7 +2,9 @@ package com.tpgrupal.appsmoviles.ui.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Logout
@@ -84,6 +86,19 @@ fun PerfilScreen(
             TopAppBar(
                 title = {
                     Text("Mi Perfil")
+                },
+
+                navigationIcon = {
+
+                    IconButton(
+                        onClick = onVolver
+                    ) {
+
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Volver"
+                        )
+                    }
                 }
             )
         }
