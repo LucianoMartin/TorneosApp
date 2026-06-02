@@ -104,7 +104,9 @@ fun TorneoCard(
                 modifier = Modifier.height(12.dp)
             )
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
                 Icon(
                     imageVector = Icons.Default.LocationOn,
@@ -123,7 +125,9 @@ fun TorneoCard(
                 modifier = Modifier.height(8.dp)
             )
 
-            Row {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
 
                 Icon(
                     imageVector = Icons.Default.Groups,
@@ -144,10 +148,27 @@ fun TorneoCard(
                 modifier = Modifier.height(8.dp)
             )
 
-            Text(
-                text = "❤️ ${torneo.favoritos.size}",
-                style = MaterialTheme.typography.bodyMedium
-            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary
+                )
+
+                Spacer(
+                    modifier = Modifier.width(6.dp)
+                )
+
+                Text(
+                    text = if (torneo.favoritos.size == 1)
+                        "1 favorito"
+                    else
+                        "${torneo.favoritos.size} favoritos"
+                )
+            }
 
             Spacer(
                 modifier = Modifier.height(12.dp)
