@@ -1,6 +1,7 @@
 package com.tpgrupal.appsmoviles.data.model
 import com.tpgrupal.appsmoviles.data.model.enums.TipoTorneo
 import com.tpgrupal.appsmoviles.data.model.enums.EstadoTorneo
+import com.tpgrupal.appsmoviles.data.model.Enfrentamiento
 
 data class Torneo(
 
@@ -17,6 +18,7 @@ data class Torneo(
     val creadorId: String = "",
     val moderadores: List<String> = emptyList(),
     val participantes: List<String> = emptyList(),
+    val solicitudes: List<String> = emptyList(),
     val maxParticipantes: Int = 16,
     val favoritos: List<String> = emptyList(),
 
@@ -30,5 +32,7 @@ data class Torneo(
     val latitud: Double = 0.0,
     val longitud: Double = 0.0,
 
-    val streamUrl: String = ""
+    val streamUrl: String = "",
+
+    val enfrentamientos: List<Enfrentamiento> = emptyList()
 )

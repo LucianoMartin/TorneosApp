@@ -57,6 +57,10 @@ fun DetalleTorneoScreen(
         mutableStateOf<Map<String, String>>(emptyMap())
     }
 
+    var solicitudesInfo by remember {
+        mutableStateOf<Map<String, String>>(emptyMap())
+    }
+
     var torneo by remember {
         mutableStateOf<Torneo?>(null)
     }
@@ -86,6 +90,24 @@ fun DetalleTorneoScreen(
 
             nombreJuego =
                 juego?.nombre ?: "Juego"
+            val mapaParticipantes =
+                mutableMapOf<String, String>()
+
+            it.participantes.forEach { uid ->
+
+                val usuario =
+                    usuarioRepository.obtenerUsuario(uid)
+
+                mapaParticipantes[uid] =
+                    usuario?.nombre
+                        ?.takeIf { nombre ->
+                            nombre.isNotBlank()
+                        }
+                        ?: uid
+            }
+
+            participantesInfo =
+                mapaParticipantes
         }
     }
 
@@ -134,6 +156,18 @@ fun DetalleTorneoScreen(
 
         val yaParticipa =
             t.participantes.contains(usuarioId)
+
+        val yaSolicito =
+            t.solicitudes.contains(usuarioId)
+
+        val esCreador =
+            t.creadorId == usuarioId
+
+        val esModerador =
+            t.moderadores.contains(usuarioId)
+
+        val esAdmin =
+            esCreador || esModerador
 
         val torneoCompleto =
             t.participantes.size >= t.maxParticipantes
@@ -526,23 +560,116 @@ fun DetalleTorneoScreen(
                                 modifier = Modifier.padding(16.dp)
                             ) {
 
-                                Text("🎮 Jugador A  vs  Jugador B")
+                                if (t.enfrentamientos.isEmpty()) {
 
-                                Spacer(
-                                    modifier = Modifier.height(12.dp)
-                                )
+                                    Text(
+                                        "El torneo todavía no fue iniciado"
+                                    )
 
-                                Text("🎮 Jugador C  vs  Jugador D")
+                                } else {
 
-                                Spacer(
-                                    modifier = Modifier.height(16.dp)
-                                )
+                                    t.enfrentamientos.forEachIndexed { index, enfrentamiento ->
 
-                                HorizontalDivider()
+                                        val jugador1 =
+                                            participantesInfo[enfrentamiento.jugador1]
+                                                ?: enfrentamiento.jugador1
 
-                                Spacer(
-                                    modifier = Modifier.height(16.dp)
-                                )
+                                        val jugador2 =
+                                            participantesInfo[enfrentamiento.jugador2]
+                                                ?: enfrentamiento.jugador2
+
+                                        Text(
+                                            "🎮 $jugador1 vs $jugador2"
+                                        )
+                                        if (
+                                            esAdmin &&
+                                            enfrentamiento.ganador.isBlank()
+                                        ) {
+
+                                            Spacer(
+                                                modifier = Modifier.height(8.dp)
+                                            )
+
+                                            Row(
+                                                horizontalArrangement =
+                                                    Arrangement.spacedBy(8.dp)
+                                            ) {
+
+                                                Button(
+                                                    onClick = {
+
+                                                        scope.launch {
+
+                                                            torneoRepository
+                                                                .seleccionarGanador(
+                                                                    torneoId = t.id,
+                                                                    indiceEnfrentamiento = index,
+                                                                    ganadorUid =
+                                                                        enfrentamiento.jugador1
+                                                                )
+
+                                                            torneo =
+                                                                torneoRepository
+                                                                    .obtenerTorneoPorId(
+                                                                        t.id
+                                                                    )
+                                                        }
+                                                    }
+                                                ) {
+                                                    Text("Ganó $jugador1")
+                                                }
+
+                                                Button(
+                                                    onClick = {
+
+                                                        scope.launch {
+
+                                                            torneoRepository
+                                                                .seleccionarGanador(
+                                                                    torneoId = t.id,
+                                                                    indiceEnfrentamiento = index,
+                                                                    ganadorUid =
+                                                                        enfrentamiento.jugador2
+                                                                )
+
+                                                            torneo =
+                                                                torneoRepository
+                                                                    .obtenerTorneoPorId(
+                                                                        t.id
+                                                                    )
+                                                        }
+                                                    }
+                                                ) {
+                                                    Text("Ganó $jugador2")
+                                                }
+                                            }
+                                        }
+
+                                        if (enfrentamiento.ganador.isNotBlank()) {
+
+                                            Spacer(
+                                                modifier = Modifier.height(4.dp)
+                                            )
+
+                                            Text(
+                                                "🏆 Ganador: ${
+                                                    participantesInfo[enfrentamiento.ganador]
+                                                        ?: enfrentamiento.ganador
+                                                }"
+                                            )
+                                        }
+
+                                        Spacer(
+                                            modifier = Modifier.height(12.dp)
+                                        )
+
+                                        HorizontalDivider()
+
+                                        Spacer(
+                                            modifier = Modifier.height(12.dp)
+                                        )
+                                    }
+                                }
 
                                 Text(
                                     "🏆 Ganadores avanzan a la siguiente ronda",
@@ -553,18 +680,186 @@ fun DetalleTorneoScreen(
                     }
                 }
             }
+            item {
+
+                if (esAdmin && t.solicitudes.isNotEmpty()) {
+
+                    ElevatedCard(
+                        modifier = Modifier.fillMaxWidth(),
+                        elevation = CardDefaults.elevatedCardElevation(
+                            defaultElevation = 8.dp
+                        )
+                    ) {
+
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp)
+                        ) {
+
+                            Text(
+                                text = "Solicitudes pendientes",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.primary
+                            )
+
+                            Spacer(
+                                modifier = Modifier.height(12.dp)
+                            )
+
+                            t.solicitudes.forEach { uid ->
+
+                                var nombreUsuario by remember(uid) {
+                                    mutableStateOf(uid)
+                                }
+
+                                LaunchedEffect(uid) {
+
+                                    val usuario =
+                                        usuarioRepository.obtenerUsuario(uid)
+
+                                    nombreUsuario =
+                                        usuario?.nombre
+                                            ?.takeIf { it.isNotBlank() }
+                                            ?: uid
+                                }
+
+                                Column(
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+
+                                    Text(
+                                        text = nombreUsuario,
+                                        style = MaterialTheme.typography.titleMedium
+                                    )
+
+                                    Spacer(
+                                        modifier = Modifier.height(8.dp)
+                                    )
+
+                                    Row {
+
+                                        Button(
+                                            onClick = {
+
+                                                scope.launch {
+
+                                                    torneoRepository
+                                                        .aceptarSolicitud(
+                                                            torneoId = t.id,
+                                                            usuarioId = uid
+                                                        )
+
+                                                    torneo =
+                                                        torneoRepository
+                                                            .obtenerTorneoPorId(
+                                                                t.id
+                                                            )
+                                                }
+                                            }
+                                        ) {
+                                            Text("Aceptar")
+                                        }
+
+                                        Spacer(
+                                            modifier = Modifier.width(8.dp)
+                                        )
+
+                                        OutlinedButton(
+                                            onClick = {
+
+                                                scope.launch {
+
+                                                    torneoRepository
+                                                        .rechazarSolicitud(
+                                                            torneoId = t.id,
+                                                            usuarioId = uid
+                                                        )
+
+                                                    torneo =
+                                                        torneoRepository
+                                                            .obtenerTorneoPorId(
+                                                                t.id
+                                                            )
+                                                }
+                                            }
+                                        ) {
+                                            Text("Rechazar")
+                                        }
+                                    }
+
+                                    Spacer(
+                                        modifier = Modifier.height(12.dp)
+                                    )
+
+                                    HorizontalDivider()
+
+                                    Spacer(
+                                        modifier = Modifier.height(12.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            item {
+
+                if (
+                    esAdmin &&
+                    t.estado == EstadoTorneo.INSCRIPCION
+                ) {
+
+                    Button(
+
+                        onClick = {
+
+                            scope.launch {
+
+                                torneoRepository.iniciarTorneo(
+                                    t.id
+                                )
+
+                                torneo =
+                                    torneoRepository.obtenerTorneoPorId(
+                                        t.id
+                                    )
+                            }
+                        },
+
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(64.dp)
+
+                    ) {
+
+                        Text(
+                            "Iniciar torneo"
+                        )
+                    }
+
+                    Spacer(
+                        modifier = Modifier.height(12.dp)
+                    )
+                }
+            }
 
             item {
 
                 FilledTonalButton(
 
-                    enabled = !yaParticipa && !torneoCompleto,
+                    enabled =
+                        !yaParticipa &&
+                                !yaSolicito &&
+                                !torneoCompleto &&
+                                t.estado == EstadoTorneo.INSCRIPCION,
 
                     onClick = {
 
                         scope.launch {
 
-                            torneoRepository.participarEnTorneo(
+                            torneoRepository.solicitarParticipacion(
                                 torneoId = t.id,
                                 usuarioId = usuarioId
                             )
@@ -589,6 +884,9 @@ fun DetalleTorneoScreen(
 
                             yaParticipa ->
                                 "Ya estás participando"
+
+                            yaSolicito ->
+                                "Solicitud enviada"
 
                             torneoCompleto ->
                                 "Cupos completos"
