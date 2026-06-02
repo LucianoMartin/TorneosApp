@@ -19,15 +19,14 @@ class HomeViewModel : ViewModel() {
         get() = _torneos
 
     init {
-        cargarTorneos()
+        observarTorneos()
     }
 
-    fun cargarTorneos() {
+    private fun observarTorneos() {
 
-        viewModelScope.launch {
+        repository.observarTorneos { lista ->
 
-            _torneos.value =
-                repository.obtenerTorneos()
+            _torneos.value = lista
         }
     }
 
@@ -54,8 +53,6 @@ class HomeViewModel : ViewModel() {
                         usuarioId
                     )
                 }
-
-                cargarTorneos()
 
             } catch (e: Exception) {
 
