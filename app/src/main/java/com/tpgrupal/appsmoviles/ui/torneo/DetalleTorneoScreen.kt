@@ -904,6 +904,14 @@ private fun obtenerImagenJuego(nombreJuego: String): Int {
     return when (nombreJuego.lowercase()) {
 
         "valorant" -> R.drawable.valorant
+        "lol" -> R.drawable.lol
+        "cs2" -> R.drawable.cs2
+        "fifa" -> R.drawable.fifa
+        "fornite" -> R.drawable.fortnite
+        "mario_kart" -> R.drawable.mario_kart
+        "minecraft" -> R.drawable.minecraft
+        "rocketleague" -> R.drawable.rocketleague
+        "smash" -> R.drawable.smash
 
         else -> R.drawable.ic_launcher_background
     }

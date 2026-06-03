@@ -5,6 +5,8 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.navigation.AppNavigation
 import com.tpgrupal.appsmoviles.ui.theme.TorneosTheme
+import androidx.compose.ui.platform.LocalContext
+import com.tpgrupal.appsmoviles.ui.notifications.NotificacionListener
 
 @Composable
 fun App() {
@@ -29,6 +31,18 @@ fun App() {
         "home"
     } else {
         "login"
+    }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(user) {
+
+        if (user != null) {
+
+            NotificacionListener(
+                context
+            ).iniciar()
+        }
     }
 
     TorneosTheme {
