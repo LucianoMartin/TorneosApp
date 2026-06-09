@@ -13,6 +13,8 @@ import com.tpgrupal.appsmoviles.ui.mistorneos.MisTorneosScreen
 import com.tpgrupal.appsmoviles.ui.participaciones.ParticipacionesScreen
 import com.tpgrupal.appsmoviles.ui.profile.FavoritosScreen
 import com.tpgrupal.appsmoviles.ui.profile.PerfilScreen
+import com.tpgrupal.appsmoviles.ui.tienda.TiendaScreen
+import com.tpgrupal.appsmoviles.ui.tienda.TiendaViewModel
 import com.tpgrupal.appsmoviles.ui.torneo.CrearTorneoScreen
 import com.tpgrupal.appsmoviles.ui.torneo.DetalleTorneoScreen
 
@@ -159,6 +161,15 @@ fun AppNavigation(
                         )
                     },
 
+                    onPerfilClick = {
+                        navController.navigate("perfil")
+                    }
+                )
+            }
+
+            composable("tienda") {
+
+                TiendaScreen(
                     onPerfilClick = {
                         navController.navigate("perfil")
                     }

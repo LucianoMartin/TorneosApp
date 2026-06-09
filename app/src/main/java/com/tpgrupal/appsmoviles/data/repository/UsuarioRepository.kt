@@ -50,4 +50,18 @@ class UsuarioRepository {
             )
             .await()
     }
+
+    suspend fun actualizarPuntos(
+        uid: String,
+        nuevosPuntos: Int
+    ) {
+
+        db.collection("usuarios")
+            .document(uid)
+            .update(
+                "puntos",
+                nuevosPuntos
+            )
+            .await()
+    }
 }
