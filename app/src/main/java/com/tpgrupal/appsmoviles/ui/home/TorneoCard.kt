@@ -16,10 +16,6 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
 import com.tpgrupal.appsmoviles.ui.utils.textoAmigable
-import com.tpgrupal.appsmoviles.data.model.enums.EstadoTorneo
-import com.tpgrupal.appsmoviles.ui.theme.ErrorRed
-import com.tpgrupal.appsmoviles.ui.theme.NeonBlue
-import com.tpgrupal.appsmoviles.ui.theme.SuccessGreen
 import com.tpgrupal.appsmoviles.ui.theme.TextPrimary
 import com.tpgrupal.appsmoviles.ui.utils.colorEstado
 import com.tpgrupal.appsmoviles.ui.utils.iconoEstado

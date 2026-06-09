@@ -76,4 +76,7 @@ dependencies {
 
     // Mapas
     implementation("org.osmdroid:osmdroid-android:6.1.20")
+
+    // Imagenes
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 }
