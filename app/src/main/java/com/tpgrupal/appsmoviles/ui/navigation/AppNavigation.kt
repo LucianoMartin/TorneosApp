@@ -9,6 +9,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.home.HomeScreen
 import com.tpgrupal.appsmoviles.ui.login.LoginScreen
+import com.tpgrupal.appsmoviles.ui.mistorneos.MisTorneosScreen
 import com.tpgrupal.appsmoviles.ui.participaciones.ParticipacionesScreen
 import com.tpgrupal.appsmoviles.ui.profile.FavoritosScreen
 import com.tpgrupal.appsmoviles.ui.profile.PerfilScreen
@@ -133,6 +134,23 @@ fun AppNavigation(
             composable("participaciones") {
 
                 ParticipacionesScreen(
+
+                    onTorneoClick = { torneoId ->
+
+                        navController.navigate(
+                            "detalle_torneo/$torneoId"
+                        )
+                    },
+
+                    onPerfilClick = {
+                        navController.navigate("perfil")
+                    }
+                )
+            }
+
+            composable("mis_torneos") {
+
+                MisTorneosScreen(
 
                     onTorneoClick = { torneoId ->
 

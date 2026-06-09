@@ -16,7 +16,7 @@ fun EstadoTorneo.textoAmigable(): String {
     return when (this) {
 
         EstadoTorneo.INSCRIPCION ->
-            "Inscripciones abiertas"
+            "Abierto"
 
         EstadoTorneo.EN_CURSO ->
             "En juego"
