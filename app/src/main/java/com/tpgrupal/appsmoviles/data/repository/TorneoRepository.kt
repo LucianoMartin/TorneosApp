@@ -6,6 +6,8 @@ import com.tpgrupal.appsmoviles.data.model.Torneo
 import kotlinx.coroutines.tasks.await
 import com.tpgrupal.appsmoviles.data.model.Enfrentamiento
 import com.tpgrupal.appsmoviles.data.model.enums.EstadoTorneo
+import com.tpgrupal.appsmoviles.data.model.Notificacion
+import com.tpgrupal.appsmoviles.data.repository.NotificacionRepository
 
 class TorneoRepository {
 
@@ -178,12 +180,43 @@ class TorneoRepository {
                 )
             )
             .await()
+        val usuarios =
+            db.collection("usuarios")
+                .get()
+                .await()
+
+        usuarios.documents.forEach { documento ->
+
+            val favoritos =
+                documento.get("favoritos")
+                        as? List<String>
+                    ?: emptyList()
+
+            if (favoritos.contains(torneoId)) {
+
+                db.collection("notificaciones")
+                    .add(
+                        mapOf(
+                            "usuarioId" to documento.id,
+                            "titulo" to "🚀 Torneo iniciado",
+                            "mensaje" to "${torneo.nombre} acaba de comenzar",
+                            "fecha" to System.currentTimeMillis(),
+                            "leida" to false
+                        )
+                    )
+                    .await()
+            }
+        }
     }
 
     suspend fun solicitarParticipacion(
         torneoId: String,
         usuarioId: String
     ) {
+
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
 
         db.collection("torneos")
             .document(torneoId)
@@ -192,12 +225,27 @@ class TorneoRepository {
                 FieldValue.arrayUnion(usuarioId)
             )
             .await()
-    }
 
+        db.collection("notificaciones")
+            .add(
+                mapOf(
+                    "usuarioId" to torneo.creadorId,
+                    "titulo" to "📩 Nueva solicitud",
+                    "mensaje" to "Hay una nueva solicitud para ${torneo.nombre}",
+                    "fecha" to System.currentTimeMillis(),
+                    "leida" to false
+                )
+            )
+            .await()
+    }
     suspend fun aceptarSolicitud(
         torneoId: String,
         usuarioId: String
     ) {
+
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
 
         db.collection("torneos")
             .document(torneoId)
@@ -208,6 +256,18 @@ class TorneoRepository {
                 )
             )
             .await()
+
+        db.collection("notificaciones")
+            .add(
+                mapOf(
+                    "usuarioId" to usuarioId,
+                    "titulo" to "🎉 Solicitud aceptada",
+                    "mensaje" to "Fuiste aceptado en el torneo ${torneo.nombre}",
+                    "fecha" to System.currentTimeMillis(),
+                    "leida" to false
+                )
+            )
+            .await()
     }
 
     suspend fun rechazarSolicitud(
@@ -215,11 +275,27 @@ class TorneoRepository {
         usuarioId: String
     ) {
 
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
+
         db.collection("torneos")
             .document(torneoId)
             .update(
                 "solicitudes",
                 FieldValue.arrayRemove(usuarioId)
+            )
+            .await()
+
+        db.collection("notificaciones")
+            .add(
+                mapOf(
+                    "usuarioId" to usuarioId,
+                    "titulo" to "❌ Solicitud rechazada",
+                    "mensaje" to "Tu solicitud para ${torneo.nombre} fue rechazada",
+                    "fecha" to System.currentTimeMillis(),
+                    "leida" to false
+                )
             )
             .await()
     }
@@ -247,6 +323,18 @@ class TorneoRepository {
             .update(
                 "enfrentamientos",
                 enfrentamientos
+            )
+            .await()
+
+        db.collection("notificaciones")
+            .add(
+                mapOf(
+                    "usuarioId" to ganadorUid,
+                    "titulo" to "🏆 ¡Ganaste!",
+                    "mensaje" to "Avanzaste a la siguiente ronda en ${torneo.nombre}",
+                    "fecha" to System.currentTimeMillis(),
+                    "leida" to false
+                )
             )
             .await()
     }
