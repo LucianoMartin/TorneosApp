@@ -25,15 +25,18 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.tpgrupal.appsmoviles.R
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.ui.platform.LocalContext
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import com.tpgrupal.appsmoviles.data.repository.UsuarioRepository
+import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -202,7 +205,7 @@ fun DetalleTorneoScreen(
 
                             Image(
                                 painter = painterResource(
-                                    id = obtenerImagenJuego(nombreJuego)
+                                    id = obtenerImagenJuego(t.juegoId)
                                 ),
                                 contentDescription = null,
 
@@ -423,6 +426,64 @@ fun DetalleTorneoScreen(
 
                         Text(
                             t.requisitos.ifBlank { "Sin requisitos" }
+                        )
+                    }
+                }
+            }
+
+            item {
+
+                ElevatedCard(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+
+                        Text(
+                            text = "Ubicación",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
+                        )
+
+                        HorizontalDivider()
+
+                        MapaTorneo(
+                            context = LocalContext.current,
+                            latitud = t.latitud,
+                            longitud = t.longitud
+                        )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Icon(
+                                imageVector = Icons.Default.LocationOn,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+
+                            Spacer(
+                                modifier = Modifier.width(6.dp)
+                            )
+
+                            Text(
+                                text = "Ciudad: ${t.ciudad}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
+
+                        Text(
+                            text = "Latitud: %.5f  |  Longitud: %.5f"
+                                .format(
+                                    t.latitud,
+                                    t.longitud
+                                ),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -899,10 +960,18 @@ fun DetalleTorneoScreen(
     }
 
 }
-private fun obtenerImagenJuego(nombreJuego: String): Int {
+private fun obtenerImagenJuego(juegoId: String): Int {
 
-    return when (nombreJuego.lowercase()) {
+    return when (juegoId.lowercase()) {
 
+        "cs2" -> R.drawable.cs2
+        "fifa" -> R.drawable.fifa
+        "fortnite" -> R.drawable.fortnite
+        "lol" -> R.drawable.lol
+        "mario_kart" -> R.drawable.mario_kart
+        "minecraft" -> R.drawable.minecraft
+        "rocketleague" -> R.drawable.rocketleague
+        "smash" -> R.drawable.smash
         "valorant" -> R.drawable.valorant
 
         else -> R.drawable.ic_launcher_background
