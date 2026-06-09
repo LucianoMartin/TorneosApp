@@ -12,9 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.components.AppToolbar
+import com.tpgrupal.appsmoviles.ui.components.BottomNavBar
+import com.tpgrupal.appsmoviles.ui.navigation.LocalNavController
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -25,6 +29,9 @@ fun HomeScreen(
     onPerfilClick: () -> Unit
 ) {
 
+    val navController =
+        LocalNavController.current
+
     val torneos by viewModel.torneos.collectAsState()
 
     Scaffold(
@@ -34,6 +41,14 @@ fun HomeScreen(
             AppToolbar(
                 titulo = "Torneos",
                 onPerfilClick = onPerfilClick
+            )
+        },
+
+        bottomBar = {
+
+            BottomNavBar(
+                navController = navController,
+                selectedIndex = 0
             )
         },
 

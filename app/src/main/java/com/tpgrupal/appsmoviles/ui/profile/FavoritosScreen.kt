@@ -14,6 +14,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
 import com.tpgrupal.appsmoviles.data.repository.TorneoRepository
+import com.tpgrupal.appsmoviles.ui.components.BottomNavBar
 import com.tpgrupal.appsmoviles.ui.home.TorneoCard
 
 @OptIn(ExperimentalMaterial3Api::class)

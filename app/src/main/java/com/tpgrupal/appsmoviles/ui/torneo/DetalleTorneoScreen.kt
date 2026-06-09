@@ -37,6 +37,8 @@ import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.launch
 import com.tpgrupal.appsmoviles.data.repository.UsuarioRepository
 import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
+import com.tpgrupal.appsmoviles.ui.utils.colorEstado
+import com.tpgrupal.appsmoviles.ui.utils.iconoEstado
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -265,33 +267,29 @@ fun DetalleTorneoScreen(
                                     onClick = {},
 
                                     colors = AssistChipDefaults.assistChipColors(
-
-                                        containerColor = when (t.estado) {
-
-                                            EstadoTorneo.INSCRIPCION ->
-                                                SuccessGreen
-
-                                            EstadoTorneo.EN_CURSO ->
-                                                NeonBlue
-
-                                            EstadoTorneo.FINALIZADO ->
-                                                ErrorRed
-                                        },
-
+                                        containerColor = t.estado.colorEstado(),
                                         labelColor = TextPrimary
                                     ),
 
                                     label = {
-                                        Text(
-                                            t.estado.textoAmigable()
-                                        )
-                                    }
-                                )
 
-                                AssistChip(
-                                    onClick = {},
-                                    label = {
-                                        Text(t.ciudad)
+                                        Row {
+
+                                            Icon(
+                                                imageVector = t.estado.iconoEstado(),
+                                                contentDescription = null,
+                                                tint = TextPrimary,
+                                                modifier = Modifier.size(18.dp)
+                                            )
+
+                                            Spacer(
+                                                modifier = Modifier.width(4.dp)
+                                            )
+
+                                            Text(
+                                                t.estado.textoAmigable()
+                                            )
+                                        }
                                     }
                                 )
                             }
@@ -970,17 +968,9 @@ private fun obtenerImagenJuego(juegoId: String): Int {
         "lol" -> R.drawable.lol
         "mario_kart" -> R.drawable.mario_kart
         "minecraft" -> R.drawable.minecraft
-        "rocketleague" -> R.drawable.rocketleague
+        "rocket_league" -> R.drawable.rocketleague
         "smash" -> R.drawable.smash
         "valorant" -> R.drawable.valorant
-        "lol" -> R.drawable.lol
-        "cs2" -> R.drawable.cs2
-        "fifa" -> R.drawable.fifa
-        "fornite" -> R.drawable.fortnite
-        "mario_kart" -> R.drawable.mario_kart
-        "minecraft" -> R.drawable.minecraft
-        "rocketleague" -> R.drawable.rocketleague
-        "smash" -> R.drawable.smash
 
         else -> R.drawable.ic_launcher_background
     }

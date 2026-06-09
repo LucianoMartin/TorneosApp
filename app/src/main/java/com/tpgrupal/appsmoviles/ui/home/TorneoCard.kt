@@ -21,6 +21,9 @@ import com.tpgrupal.appsmoviles.ui.theme.ErrorRed
 import com.tpgrupal.appsmoviles.ui.theme.NeonBlue
 import com.tpgrupal.appsmoviles.ui.theme.SuccessGreen
 import com.tpgrupal.appsmoviles.ui.theme.TextPrimary
+import com.tpgrupal.appsmoviles.ui.utils.colorEstado
+import com.tpgrupal.appsmoviles.ui.utils.iconoEstado
+import com.tpgrupal.appsmoviles.ui.utils.juegoAmigable
 
 @Composable
 fun TorneoCard(
@@ -174,30 +177,48 @@ fun TorneoCard(
                 modifier = Modifier.height(12.dp)
             )
 
-            AssistChip(
-                onClick = {},
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
 
-                colors = AssistChipDefaults.assistChipColors(
+                AssistChip(
+                    onClick = {},
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    label = {
+                        Text(torneo.juegoId.juegoAmigable())
+                    }
+                )
 
-                    containerColor = when (torneo.estado) {
+                AssistChip(
+                    onClick = {},
+                    colors = AssistChipDefaults.assistChipColors(
+                        containerColor = torneo.estado.colorEstado(),
+                        labelColor = TextPrimary
+                    ),
+                    label = {
 
-                        EstadoTorneo.INSCRIPCION ->
-                            SuccessGreen
+                        Row {
 
-                        EstadoTorneo.EN_CURSO ->
-                            NeonBlue
+                            Icon(
+                                imageVector = torneo.estado.iconoEstado(),
+                                contentDescription = null,
+                                tint = TextPrimary,
+                                modifier = Modifier.size(18.dp)
+                            )
 
-                        EstadoTorneo.FINALIZADO ->
-                            ErrorRed
-                    },
+                            Spacer(
+                                modifier = Modifier.width(4.dp)
+                            )
 
-                    labelColor = TextPrimary
-                ),
-
-                label = {
-                    Text(torneo.estado.textoAmigable())
-                }
-            )
+                            Text(
+                                torneo.estado.textoAmigable()
+                            )
+                        }
+                    }
+                )
+            }
         }
     }
 }
