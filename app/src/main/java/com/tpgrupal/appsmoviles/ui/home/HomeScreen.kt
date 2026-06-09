@@ -34,6 +34,16 @@ fun HomeScreen(
 
     val torneos by viewModel.torneos.collectAsState()
 
+    var busqueda by remember {
+        mutableStateOf("")
+    }
+
+    val torneosFiltrados = torneos.filter {
+        it.nombre.contains(
+            busqueda,
+            ignoreCase = true
+        )
+    }
     Scaffold(
 
         topBar = {
@@ -66,55 +76,67 @@ fun HomeScreen(
         }
     ) { padding ->
 
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .padding(padding)
-                .fillMaxSize(),
-
-            contentPadding = PaddingValues(
-                top = 8.dp,
-                bottom = 80.dp
-            )
+                .fillMaxSize()
         ) {
-            if (torneos.isEmpty()) {
 
-                item {
+            OutlinedTextField(
+                value = busqueda,
+                onValueChange = { busqueda = it },
+                label = { Text("Buscar torneo") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                singleLine = true
+            )
 
-                    Box(
-                        modifier = Modifier
-                            .fillParentMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = 8.dp,
+                    bottom = 80.dp
+                )
+            ) {
 
-                        Text(
-                            "No hay torneos disponibles"
-                        )
+                if (torneosFiltrados.isEmpty()) {
+
+                    item {
+
+                        Box(
+                            modifier = Modifier.fillParentMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+
+                            Text("No hay torneos disponibles")
+                        }
                     }
                 }
-            }
 
-            items(torneos) { torneo ->
+                items(torneosFiltrados) { torneo ->
 
-                TorneoCard(
-                    torneo = torneo,
+                    TorneoCard(
+                        torneo = torneo,
 
-                    onClick = {
-                        println("ID TORNEO = ${torneo.id}")
-                        onTorneoClick(torneo.id)
-                    },
+                        onClick = {
+                            println("ID TORNEO = ${torneo.id}")
+                            onTorneoClick(torneo.id)
+                        },
 
-                    onFavoritoClick = {
+                        onFavoritoClick = {
 
-                        val usuarioId =
-                            Firebase.auth.currentUser?.uid
-                                ?: return@TorneoCard
+                            val usuarioId =
+                                Firebase.auth.currentUser?.uid
+                                    ?: return@TorneoCard
 
-                        viewModel.toggleFavorito(
-                            torneo,
-                            usuarioId
-                        )
-                    }
-                )
+                            viewModel.toggleFavorito(
+                                torneo,
+                                usuarioId
+                            )
+                        }
+                    )
+                }
             }
         }
     }

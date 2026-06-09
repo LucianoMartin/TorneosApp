@@ -36,4 +36,18 @@ class UsuarioRepository {
             null
         }
     }
+
+    suspend fun actualizarAvatar(
+        uid: String,
+        avatarUrl: String
+    ) {
+
+        db.collection("usuarios")
+            .document(uid)
+            .update(
+                "avatarUrl",
+                avatarUrl
+            )
+            .await()
+    }
 }

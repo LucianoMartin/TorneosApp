@@ -39,6 +39,7 @@ import com.tpgrupal.appsmoviles.data.repository.UsuarioRepository
 import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
 import com.tpgrupal.appsmoviles.ui.utils.colorEstado
 import com.tpgrupal.appsmoviles.ui.utils.iconoEstado
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -205,16 +206,26 @@ fun DetalleTorneoScreen(
                                 .height(240.dp)
                         ) {
 
-                            Image(
-                                painter = painterResource(
-                                    id = obtenerImagenJuego(t.juegoId)
-                                ),
-                                contentDescription = null,
+                            if (t.imagenUrl.isNotBlank()) {
 
-                                modifier = Modifier.fillMaxSize(),
+                                AsyncImage(
+                                    model = t.imagenUrl,
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
 
-                                contentScale = ContentScale.Crop
-                            )
+                            } else {
+
+                                Image(
+                                    painter = painterResource(
+                                        id = obtenerImagenJuego(t.juegoId)
+                                    ),
+                                    contentDescription = null,
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
 
                             Box(
                                 modifier = Modifier

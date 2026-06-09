@@ -20,6 +20,16 @@ import com.tpgrupal.appsmoviles.data.model.Torneo
 import com.tpgrupal.appsmoviles.data.repository.TorneoRepository
 import com.tpgrupal.appsmoviles.data.model.Usuario
 import com.tpgrupal.appsmoviles.data.repository.UsuarioRepository
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import com.tpgrupal.appsmoviles.data.cloudinary.CloudinaryUploader
+import kotlinx.coroutines.launch
+import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +41,58 @@ fun PerfilScreen(
 
     val usuario = Firebase.auth.currentUser
 
+    val context = LocalContext.current
+    CloudinaryUploader.init(context)
+
+    val scope = rememberCoroutineScope()
+
+    var avatarUrl by remember {
+        mutableStateOf("")
+    }
+
+    var imagenUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        imagenUri = uri
+
+        if (uri != null && usuario != null) {
+
+            scope.launch {
+
+                try {
+
+                    val url =
+                        CloudinaryUploader.uploadImage(uri)
+
+                    android.util.Log.d(
+                        "AVATAR",
+                        "URL Cloudinary: $url"
+                    )
+
+                    UsuarioRepository()
+                        .actualizarAvatar(
+                            usuario.uid,
+                            url
+                        )
+
+                    avatarUrl = url
+
+                } catch (e: Exception) {
+
+                    android.util.Log.e(
+                        "AVATAR",
+                        "Error subiendo avatar",
+                        e
+                    )
+                }
+            }
+        }
+    }
+
     var torneos by remember {
         mutableStateOf<List<Torneo>>(emptyList())
     }
@@ -38,21 +100,36 @@ fun PerfilScreen(
     LaunchedEffect(Unit) {
 
         torneos = TorneoRepository().obtenerTorneos()
+        usuario?.let {
+
+            val usuarioFirestore =
+                UsuarioRepository()
+                    .obtenerUsuario(it.uid)
+
+            avatarUrl =
+                usuarioFirestore?.avatarUrl ?: ""
+        }
 
         usuario?.let {
 
-            UsuarioRepository().crearUsuario(
-                Usuario(
-                    uid = it.uid,
+            val repo = UsuarioRepository()
 
-                    nombre = it.email
-                        ?.substringBefore("@")
-                        ?.replaceFirstChar { c -> c.uppercase() }
-                        ?: "Jugador",
+            val usuarioExistente =
+                repo.obtenerUsuario(it.uid)
 
-                    email = it.email ?: ""
+            if (usuarioExistente == null) {
+
+                repo.crearUsuario(
+                    Usuario(
+                        uid = it.uid,
+                        nombre = it.email
+                            ?.substringBefore("@")
+                            ?.replaceFirstChar { c -> c.uppercase() }
+                            ?: "Jugador",
+                        email = it.email ?: ""
+                    )
                 )
-            )
+            }
         }
     }
 
@@ -114,11 +191,35 @@ fun PerfilScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Icon(
-                imageVector = Icons.Default.AccountCircle,
-                contentDescription = null,
-                modifier = Modifier.size(120.dp)
-            )
+            if (avatarUrl.isNotBlank()) {
+
+                AsyncImage(
+                    model = avatarUrl,
+                    contentDescription = "Avatar",
+                    modifier = Modifier
+                        .size(120.dp)
+                        .clip(CircleShape),
+                    contentScale = ContentScale.Crop
+                )
+
+            } else {
+
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null,
+                    modifier = Modifier.size(120.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = {
+                    launcher.launch("image/*")
+                }
+            ) {
+                Text("Cambiar foto")
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 

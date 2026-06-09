@@ -25,6 +25,11 @@ import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
 import com.tpgrupal.appsmoviles.ui.utils.obtenerCiudad
 import com.tpgrupal.appsmoviles.data.repository.JuegoRepository
 import com.tpgrupal.appsmoviles.data.model.Juego
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import coil.compose.AsyncImage
+import com.tpgrupal.appsmoviles.data.cloudinary.CloudinaryUploader
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,11 +43,20 @@ fun CrearTorneoScreen(
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    CloudinaryUploader.init(context)
 
     var nombre by remember { mutableStateOf("") }
     var ciudad by remember { mutableStateOf("La Plata") }
     var descripcion by remember { mutableStateOf("") }
     var requisitos by remember { mutableStateOf("") }
+    var imagenUri by remember {
+        mutableStateOf<Uri?>(null)
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri ->
+        imagenUri = uri
+    }
     var maxParticipantes by remember { mutableStateOf("16") }
 
     // Selección de juego
@@ -299,6 +313,26 @@ fun CrearTorneoScreen(
             )
 
             Button(
+                onClick = {
+                    launcher.launch("image/*")
+                },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Seleccionar imagen")
+            }
+
+            imagenUri?.let { uri ->
+
+                AsyncImage(
+                    model = uri,
+                    contentDescription = "Imagen torneo",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                )
+            }
+
+            Button(
                 enabled = formularioValido,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -307,24 +341,37 @@ fun CrearTorneoScreen(
 
                     scope.launch {
 
-                        repository.crearTorneo(
+                        try {
 
-                            Torneo(
-                                nombre = nombre,
-                                juegoId = juegoSeleccionado?.id ?: "",
-                                ciudad = ciudad,
-                                descripcion = descripcion,
-                                requisitos = requisitos,
-                                maxParticipantes = maxParticipantes.toIntOrNull() ?: 16,
-                                latitud = latitud,
-                                longitud = longitud,
-                                fechaCreacion = System.currentTimeMillis(),
-                                fechaInicio = System.currentTimeMillis(),
-                                creadorId = Firebase.auth.currentUser?.uid ?: ""
+                            val imagenUrl = if (imagenUri != null) {
+                                CloudinaryUploader.uploadImage(imagenUri!!)
+                            } else {
+                                ""
+                            }
+
+                            repository.crearTorneo(
+
+                                Torneo(
+                                    nombre = nombre,
+                                    juegoId = juegoSeleccionado?.id ?: "",
+                                    ciudad = ciudad,
+                                    descripcion = descripcion,
+                                    requisitos = requisitos,
+                                    imagenUrl = imagenUrl,
+                                    maxParticipantes = maxParticipantes.toIntOrNull() ?: 16,
+                                    latitud = latitud,
+                                    longitud = longitud,
+                                    fechaCreacion = System.currentTimeMillis(),
+                                    fechaInicio = System.currentTimeMillis(),
+                                    creadorId = Firebase.auth.currentUser?.uid ?: ""
+                                )
                             )
-                        )
 
-                        onVolver()
+                            onVolver()
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                 }
             ) {

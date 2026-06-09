@@ -52,6 +52,11 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     // Material Components
     implementation("com.google.android.material:material:1.12.0")
+    // Cloudinary
+    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation("com.cloudinary:cloudinary-android:3.1.2")
+
+
     // Compose
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")

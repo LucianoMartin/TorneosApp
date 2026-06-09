@@ -180,6 +180,17 @@ class TorneoRepository {
                 )
             )
             .await()
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                mapOf(
+                    "estado" to EstadoTorneo.EN_CURSO.name,
+                    "enfrentamientos" to enfrentamientos
+                )
+            )
+            .await()
+
         val usuarios =
             db.collection("usuarios")
                 .get()
