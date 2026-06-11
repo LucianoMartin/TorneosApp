@@ -1,14 +1,45 @@
 package com.tpgrupal.appsmoviles.ui.torneo
 
-import androidx.compose.foundation.layout.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.onFocusChanged
@@ -16,24 +47,37 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
-import com.tpgrupal.appsmoviles.ui.utils.obtenerCiudad
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
-import com.tpgrupal.appsmoviles.data.cloudinary.CloudinaryUploader
+import com.tpgrupal.appsmoviles.ui.components.MapaTorneo
+import com.tpgrupal.appsmoviles.ui.utils.obtenerCiudad
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CrearTorneoScreen(
+fun EditarTorneoScreen(
+    torneoId: String,
     onVolver: () -> Unit
 ) {
 
-    val viewModel: CrearTorneoViewModel = viewModel()
+    val viewModel: EditarTorneoViewModel =
+        viewModel()
 
-    var expanded by remember {
-        mutableStateOf(false)
+    LaunchedEffect(torneoId) {
+        viewModel.cargarTorneo(torneoId)
+    }
+
+    val torneo = viewModel.torneo
+
+    if (torneo == null) {
+
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            CircularProgressIndicator()
+        }
+
+        return
     }
 
     val context = LocalContext.current
@@ -44,19 +88,6 @@ fun CrearTorneoScreen(
 
         viewModel.actualizarImagen(uri)
     }
-
-    CloudinaryUploader.init(context)
-
-    val nombre by viewModel.nombre.collectAsState()
-    val ciudad by viewModel.ciudad.collectAsState()
-    val descripcion by viewModel.descripcion.collectAsState()
-    val requisitos by viewModel.requisitos.collectAsState()
-    val imagenUri by viewModel.imagenUri.collectAsState()
-    val maxParticipantes by viewModel.maxParticipantes.collectAsState()
-    val juegos by viewModel.juegos.collectAsState()
-    val juegoSeleccionado by viewModel.juegoSeleccionado.collectAsState()
-    val latitud by viewModel.latitud.collectAsState()
-    val longitud by viewModel.longitud.collectAsState()
 
     var mapaSeleccionado by remember {
         mutableStateOf(false)
@@ -69,18 +100,14 @@ fun CrearTorneoScreen(
         }
     }
 
-    val formularioValido =
-        nombre.isNotBlank() &&
-                juegoSeleccionado != null &&
-                (maxParticipantes.toIntOrNull() ?: 0) > 1
-
     Scaffold(
 
         topBar = {
 
             TopAppBar(
+
                 title = {
-                    Text("Crear Torneo")
+                    Text("Editar torneo")
                 },
 
                 navigationIcon = {
@@ -91,7 +118,7 @@ fun CrearTorneoScreen(
 
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
+                            contentDescription = null
                         )
                     }
                 }
@@ -100,19 +127,28 @@ fun CrearTorneoScreen(
 
     ) { padding ->
 
+        var expanded by remember {
+            mutableStateOf(false)
+        }
+
         Column(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement =
+                Arrangement.spacedBy(12.dp)
         ) {
 
             OutlinedTextField(
-                value = nombre,
-                onValueChange = viewModel::actualizarNombre,
-                label = { Text("Nombre") },
+                value = viewModel.nombre,
+                onValueChange = {
+                    viewModel.nombre = it
+                },
+                label = {
+                    Text("Nombre")
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .then(quitarFocoMapa)
@@ -121,14 +157,12 @@ fun CrearTorneoScreen(
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = {
-
                     expanded = !expanded
-                    mapaSeleccionado = false
                 }
             ) {
 
                 OutlinedTextField(
-                    value = juegoSeleccionado?.nombre ?: "",
+                    value = viewModel.juegoSeleccionado?.nombre ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = {
@@ -152,7 +186,7 @@ fun CrearTorneoScreen(
                     }
                 ) {
 
-                    juegos.forEach { juego ->
+                    viewModel.juegos.forEach { juego ->
 
                         DropdownMenuItem(
                             text = {
@@ -161,6 +195,7 @@ fun CrearTorneoScreen(
                             onClick = {
 
                                 viewModel.actualizarJuego(juego)
+
                                 expanded = false
                             }
                         )
@@ -197,8 +232,8 @@ fun CrearTorneoScreen(
 
                     MapaTorneo(
                         context = context,
-                        latitud = latitud,
-                        longitud = longitud,
+                        latitud = viewModel.latitud,
+                        longitud = viewModel.longitud,
                         editable = true,
                         onMapaTocado = {
 
@@ -230,14 +265,14 @@ fun CrearTorneoScreen(
                         )
 
                         Text(
-                            text = "Ciudad: $ciudad",
+                            text = "Ciudad: ${viewModel.ciudad}",
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
 
                     Text(
                         text = "Latitud: %.5f  |  Longitud: %.5f"
-                            .format(latitud, longitud),
+                            .format(viewModel.latitud, viewModel.longitud),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -245,10 +280,35 @@ fun CrearTorneoScreen(
             }
 
             OutlinedTextField(
-                value = maxParticipantes,
-                onValueChange = viewModel::actualizarMaxParticipantes,
-                isError = (maxParticipantes.toIntOrNull() ?: 0) <= 1,
+                value = viewModel.descripcion,
+                onValueChange = {
+                    viewModel.descripcion = it
+                },
+                label = {
+                    Text("Descripción")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(quitarFocoMapa)
+            )
 
+            OutlinedTextField(
+                value = viewModel.requisitos,
+                onValueChange = {
+                    viewModel.requisitos = it
+                },
+                label = {
+                    Text("Requisitos")
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(quitarFocoMapa)
+            )
+
+            OutlinedTextField(
+                value = viewModel.maxParticipantes,
+                onValueChange = viewModel::actualizarMaxParticipantes,
+                isError = viewModel.errorMaxParticipantes != null,
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Number
                 ),
@@ -258,67 +318,125 @@ fun CrearTorneoScreen(
                     .then(quitarFocoMapa)
             )
 
-            if ((maxParticipantes.toIntOrNull() ?: 0) <= 1) {
+            viewModel.errorMaxParticipantes?.let {
                 Text(
-                    text = "Debe haber al menos 2 participantes",
+                    text = it,
                     color = MaterialTheme.colorScheme.error,
                     style = MaterialTheme.typography.bodySmall
                 )
             }
 
-            OutlinedTextField(
-                value = descripcion,
-                onValueChange = viewModel::actualizarDescripcion,
-                label = { Text("Descripción") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(quitarFocoMapa)
-            )
-
-            OutlinedTextField(
-                value = requisitos,
-                onValueChange = viewModel::actualizarRequisitos,
-                label = { Text("Requisitos") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(quitarFocoMapa)
+            Spacer(
+                modifier = Modifier.height(8.dp)
             )
 
             Button(
                 onClick = {
                     launcher.launch("image/*")
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(quitarFocoMapa)
             ) {
-                Text("Seleccionar imagen")
+
+                Text("Cambiar imagen")
             }
 
-            imagenUri?.let { uri ->
+            if (viewModel.imagenUri != null) {
 
                 AsyncImage(
-                    model = uri,
-                    contentDescription = "Imagen del torneo",
+                    model = viewModel.imagenUri,
+                    contentDescription = "Imagen nueva",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .then(quitarFocoMapa)
+                )
+
+            } else if (torneo.imagenUrl.isNotBlank()) {
+
+                AsyncImage(
+                    model = torneo.imagenUrl,
+                    contentDescription = "Imagen actual",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
                 )
             }
 
+            OutlinedCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+
+                    Text(
+                        text = "Moderadores",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+
+                    HorizontalDivider()
+
+                    torneo.participantes.forEach { uid ->
+
+                        val esModerador =
+                            uid in viewModel.moderadores
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+
+                            Text(
+                                text = viewModel.participantesInfo[uid] ?: uid,
+                                modifier = Modifier.weight(1f)
+                            )
+
+                            Button(
+
+                                onClick = {
+
+                                    if (esModerador) {
+
+                                        viewModel.quitarModerador(uid)
+
+                                    } else {
+
+                                        viewModel.agregarModerador(uid)
+                                    }
+                                }
+                            ) {
+
+                                Text(
+
+                                    if (esModerador)
+                                        "Quitar"
+                                    else
+                                        "Hacer moderador"
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
             Button(
-                enabled = formularioValido,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(quitarFocoMapa),
                 onClick = {
 
-                    viewModel.crearTorneo(
+                    viewModel.guardarCambios(
                         context = context,
                         onSuccess = onVolver
                     )
-                }
+                },
+                enabled = viewModel.formularioValido,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(quitarFocoMapa)
             ) {
-                Text("Crear Torneo")
+
+                Text("Guardar cambios")
             }
         }
     }

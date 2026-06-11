@@ -14,9 +14,9 @@ import com.tpgrupal.appsmoviles.ui.participaciones.ParticipacionesScreen
 import com.tpgrupal.appsmoviles.ui.profile.FavoritosScreen
 import com.tpgrupal.appsmoviles.ui.profile.PerfilScreen
 import com.tpgrupal.appsmoviles.ui.tienda.TiendaScreen
-import com.tpgrupal.appsmoviles.ui.tienda.TiendaViewModel
 import com.tpgrupal.appsmoviles.ui.torneo.CrearTorneoScreen
 import com.tpgrupal.appsmoviles.ui.torneo.DetalleTorneoScreen
+import com.tpgrupal.appsmoviles.ui.torneo.EditarTorneoScreen
 
 @Composable
 fun AppNavigation(
@@ -81,6 +81,14 @@ fun AppNavigation(
                         navController.navigate("favoritos")
                     },
 
+                    onMisTorneosClick = {
+                        navController.navigate("mis_torneos")
+                    },
+
+                    onMisPartidasClick = {
+                        navController.navigate("participaciones")
+                    },
+
                     onCerrarSesion = {
 
                         Firebase.auth.signOut()
@@ -126,6 +134,29 @@ fun AppNavigation(
                         ?: ""
 
                 DetalleTorneoScreen(
+                    torneoId = torneoId,
+                    onVolver = {
+                        navController.popBackStack()
+                    },
+
+                    onEditarTorneo = { id ->
+                        navController.navigate(
+                            "editar_torneo/$id"
+                        )
+                    }
+                )
+            }
+
+            composable(
+                route = "editar_torneo/{torneoId}"
+            ) { backStackEntry ->
+
+                val torneoId =
+                    backStackEntry.arguments
+                        ?.getString("torneoId")
+                        ?: ""
+
+                EditarTorneoScreen(
                     torneoId = torneoId,
                     onVolver = {
                         navController.popBackStack()

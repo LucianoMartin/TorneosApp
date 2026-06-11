@@ -24,4 +24,20 @@ class NotificacionRepository {
 
         ).await()
     }
+
+    suspend fun notificar(
+        usuarioId: String,
+        titulo: String,
+        mensaje: String
+    ) {
+        crearNotificacion(
+            Notificacion(
+                usuarioId = usuarioId,
+                titulo = titulo,
+                mensaje = mensaje,
+                fecha = System.currentTimeMillis(),
+                leida = false
+            )
+        )
+    }
 }

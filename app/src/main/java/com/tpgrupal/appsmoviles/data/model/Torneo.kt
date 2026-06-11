@@ -18,7 +18,6 @@ data class Torneo(
     val creadorId: String = "",
     val moderadores: List<String> = emptyList(),
     val participantes: List<String> = emptyList(),
-    val solicitudes: List<String> = emptyList(),
     val maxParticipantes: Int = 16,
     val favoritos: List<String> = emptyList(),
 

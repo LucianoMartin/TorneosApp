@@ -2,7 +2,7 @@ package com.tpgrupal.appsmoviles.data.model
 
 data class Prediccion(
     val usuarioId: String = "",
-    val torneoId: String = "",
+    val partidaId: String = "",
     val ganadorPredichoId: String = "",
-    val puntosGanados: Int = 0
+    val acertada: Boolean = false
 )

@@ -6,12 +6,35 @@ import com.tpgrupal.appsmoviles.data.model.Torneo
 import kotlinx.coroutines.tasks.await
 import com.tpgrupal.appsmoviles.data.model.Enfrentamiento
 import com.tpgrupal.appsmoviles.data.model.enums.EstadoTorneo
-import com.tpgrupal.appsmoviles.data.model.Notificacion
-import com.tpgrupal.appsmoviles.data.repository.NotificacionRepository
+import com.tpgrupal.appsmoviles.data.model.SolicitudParticipacion
+import com.tpgrupal.appsmoviles.data.model.enums.EstadoSolicitud
 
 class TorneoRepository {
 
     private val db = FirebaseFirestore.getInstance()
+
+    private val notificacionRepo = NotificacionRepository()
+
+    suspend fun crearTorneo(torneo: Torneo) {
+
+        val docRef = db.collection("torneos").document()
+
+        val torneoConId = torneo.copy(
+            id = docRef.id
+        )
+
+        docRef
+            .set(torneoConId)
+            .await()
+    }
+
+    suspend fun actualizarTorneo(torneo: Torneo) {
+
+        db.collection("torneos")
+            .document(torneo.id)
+            .set(torneo)
+            .await()
+    }
 
     suspend fun obtenerTorneos(): List<Torneo> {
 
@@ -34,19 +57,6 @@ class TorneoRepository {
             e.printStackTrace()
             emptyList()
         }
-    }
-
-    suspend fun crearTorneo(torneo: Torneo) {
-
-        val docRef = db.collection("torneos").document()
-
-        val torneoConId = torneo.copy(
-            id = docRef.id
-        )
-
-        docRef
-            .set(torneoConId)
-            .await()
     }
 
     suspend fun obtenerTorneoPorId(
@@ -94,6 +104,252 @@ class TorneoRepository {
             }
     }
 
+    suspend fun actualizarEnfrentamientos(
+        torneoId: String,
+        enfrentamientos: List<Enfrentamiento>
+    ) {
+        db.collection("torneos")
+            .document(torneoId)
+            .update("enfrentamientos", enfrentamientos)
+            .await()
+    }
+
+    suspend fun iniciarTorneo(
+        torneoId: String,
+        enfrentamientos: List<Enfrentamiento>
+    ) {
+
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                mapOf(
+                    "estado" to EstadoTorneo.EN_CURSO.name,
+                    "fechaInicio" to System.currentTimeMillis(),
+                    "enfrentamientos" to enfrentamientos
+                )
+            )
+            .await()
+
+        val usuarios =
+            db.collection("usuarios")
+                .get()
+                .await()
+
+        usuarios.documents.forEach { documento ->
+
+            val favoritos =
+                documento.get("favoritos")
+                        as? List<String>
+                    ?: emptyList()
+
+            if (favoritos.contains(torneoId)) {
+
+                notificacionRepo.notificar(
+                    usuarioId = documento.id,
+                    titulo = "🚀 Torneo iniciado",
+                    mensaje = "${torneo.nombre} acaba de comenzar"
+                )
+            }
+        }
+
+        val solicitudesSnapshot =
+            db.collection("torneos")
+                .document(torneoId)
+                .collection("solicitudes")
+                .get()
+                .await()
+
+        solicitudesSnapshot.documents.forEach {
+            it.reference.delete().await()
+        }
+    }
+
+    suspend fun finalizarTorneo(
+        torneoId: String
+    ) {
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                mapOf(
+                    "estado" to EstadoTorneo.FINALIZADO.name,
+                    "fechaFin" to System.currentTimeMillis()
+                )
+            )
+            .await()
+    }
+
+    suspend fun solicitarParticipacion(
+        torneoId: String,
+        solicitud: SolicitudParticipacion
+    ) {
+
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
+
+        db.collection("torneos")
+            .document(torneoId)
+            .collection("solicitudes")
+            .document(solicitud.usuarioId)
+            .set(solicitud)
+            .await()
+
+        notificacionRepo.notificar(
+            usuarioId = torneo.creadorId,
+            titulo = "📩 Nueva solicitud",
+            mensaje = "Hay una nueva solicitud para ${torneo.nombre}"
+        )
+    }
+
+    suspend fun agregarParticipante(
+        torneoId: String,
+        usuarioId: String
+    ) {
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                "participantes",
+                FieldValue.arrayUnion(usuarioId)
+            )
+            .await()
+    }
+
+    suspend fun quitarParticipante(
+        torneoId: String,
+        usuarioId: String
+    ) {
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                "participantes",
+                FieldValue.arrayRemove(usuarioId)
+            )
+            .await()
+    }
+
+    suspend fun obtenerSolicitudes(torneoId: String): List<SolicitudParticipacion> {
+        return db.collection("torneos")
+            .document(torneoId)
+            .collection("solicitudes")
+            .get()
+            .await()
+            .documents
+            .mapNotNull { it.toObject(SolicitudParticipacion::class.java) }
+    }
+
+    suspend fun obtenerSolicitudesPendientes(
+        torneoId: String
+    ): List<SolicitudParticipacion> {
+
+        return db.collection("torneos")
+            .document(torneoId)
+            .collection("solicitudes")
+            .whereEqualTo(
+                "estado",
+                EstadoSolicitud.PENDIENTE.name
+            )
+            .get()
+            .await()
+            .documents
+            .mapNotNull {
+                it.toObject(SolicitudParticipacion::class.java)
+            }
+    }
+
+    suspend fun aceptarSolicitud(
+        torneoId: String,
+        usuarioId: String
+    ) {
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
+
+        val solicitud =
+            db.collection("torneos")
+                .document(torneoId)
+                .collection("solicitudes")
+                .document(usuarioId)
+                .get()
+                .await()
+                .toObject(SolicitudParticipacion::class.java)
+                ?: return
+
+        if (solicitud.estado != EstadoSolicitud.PENDIENTE)
+            return
+
+        if (torneo.participantes.size >= torneo.maxParticipantes)
+            return
+
+        db.collection("torneos")
+            .document(torneoId)
+            .collection("solicitudes")
+            .document(usuarioId)
+            .update(
+                "estado",
+                EstadoSolicitud.ACEPTADA.name
+            )
+            .await()
+
+        db.collection("torneos")
+            .document(torneoId)
+            .update(
+                "participantes",
+                FieldValue.arrayUnion(usuarioId)
+            )
+            .await()
+
+        notificacionRepo.notificar(
+            usuarioId = usuarioId,
+            titulo = "🎉 Solicitud aceptada",
+            mensaje = "Fuiste aceptado en el torneo ${torneo.nombre}"
+        )
+    }
+
+    suspend fun rechazarSolicitud(
+        torneoId: String,
+        usuarioId: String
+    ) {
+        val torneo =
+            obtenerTorneoPorId(torneoId)
+                ?: return
+
+        val solicitud =
+            db.collection("torneos")
+                .document(torneoId)
+                .collection("solicitudes")
+                .document(usuarioId)
+                .get()
+                .await()
+                .toObject(SolicitudParticipacion::class.java)
+                ?: return
+
+        if (solicitud.estado != EstadoSolicitud.PENDIENTE)
+            return
+
+        db.collection("torneos")
+            .document(torneoId)
+            .collection("solicitudes")
+            .document(usuarioId)
+            .update(
+                "estado",
+                EstadoSolicitud.RECHAZADA.name
+            )
+            .await()
+
+        notificacionRepo.notificar(
+            usuarioId = usuarioId,
+            titulo = "❌ Solicitud rechazada",
+            mensaje = "Tu solicitud para ${torneo.nombre} fue rechazada"
+        )
+    }
+
     suspend fun agregarFavorito(
         torneoId: String,
         usuarioId: String
@@ -118,234 +374,6 @@ class TorneoRepository {
             .update(
                 "favoritos",
                 FieldValue.arrayRemove(usuarioId)
-            )
-            .await()
-    }
-
-    suspend fun participarEnTorneo(
-        torneoId: String,
-        usuarioId: String
-    ) {
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                "participantes",
-                com.google.firebase.firestore.FieldValue.arrayUnion(usuarioId)
-            )
-            .await()
-    }
-
-    suspend fun iniciarTorneo(
-        torneoId: String
-    ) {
-
-        val torneo =
-            obtenerTorneoPorId(torneoId)
-                ?: return
-
-        val participantes =
-            torneo.participantes.shuffled()
-
-        val enfrentamientos =
-            mutableListOf<Enfrentamiento>()
-
-        var i = 0
-
-        while (i < participantes.size - 1) {
-
-            enfrentamientos.add(
-
-                Enfrentamiento(
-
-                    jugador1 =
-                        participantes[i],
-
-                    jugador2 =
-                        participantes[i + 1],
-
-                    ronda = 1
-                )
-            )
-
-            i += 2
-        }
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                mapOf(
-                    "estado" to EstadoTorneo.EN_CURSO.name,
-                    "enfrentamientos" to enfrentamientos
-                )
-            )
-            .await()
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                mapOf(
-                    "estado" to EstadoTorneo.EN_CURSO.name,
-                    "enfrentamientos" to enfrentamientos
-                )
-            )
-            .await()
-
-        val usuarios =
-            db.collection("usuarios")
-                .get()
-                .await()
-
-        usuarios.documents.forEach { documento ->
-
-            val favoritos =
-                documento.get("favoritos")
-                        as? List<String>
-                    ?: emptyList()
-
-            if (favoritos.contains(torneoId)) {
-
-                db.collection("notificaciones")
-                    .add(
-                        mapOf(
-                            "usuarioId" to documento.id,
-                            "titulo" to "🚀 Torneo iniciado",
-                            "mensaje" to "${torneo.nombre} acaba de comenzar",
-                            "fecha" to System.currentTimeMillis(),
-                            "leida" to false
-                        )
-                    )
-                    .await()
-            }
-        }
-    }
-
-    suspend fun solicitarParticipacion(
-        torneoId: String,
-        usuarioId: String
-    ) {
-
-        val torneo =
-            obtenerTorneoPorId(torneoId)
-                ?: return
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                "solicitudes",
-                FieldValue.arrayUnion(usuarioId)
-            )
-            .await()
-
-        db.collection("notificaciones")
-            .add(
-                mapOf(
-                    "usuarioId" to torneo.creadorId,
-                    "titulo" to "📩 Nueva solicitud",
-                    "mensaje" to "Hay una nueva solicitud para ${torneo.nombre}",
-                    "fecha" to System.currentTimeMillis(),
-                    "leida" to false
-                )
-            )
-            .await()
-    }
-    suspend fun aceptarSolicitud(
-        torneoId: String,
-        usuarioId: String
-    ) {
-
-        val torneo =
-            obtenerTorneoPorId(torneoId)
-                ?: return
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                mapOf(
-                    "solicitudes" to FieldValue.arrayRemove(usuarioId),
-                    "participantes" to FieldValue.arrayUnion(usuarioId)
-                )
-            )
-            .await()
-
-        db.collection("notificaciones")
-            .add(
-                mapOf(
-                    "usuarioId" to usuarioId,
-                    "titulo" to "🎉 Solicitud aceptada",
-                    "mensaje" to "Fuiste aceptado en el torneo ${torneo.nombre}",
-                    "fecha" to System.currentTimeMillis(),
-                    "leida" to false
-                )
-            )
-            .await()
-    }
-
-    suspend fun rechazarSolicitud(
-        torneoId: String,
-        usuarioId: String
-    ) {
-
-        val torneo =
-            obtenerTorneoPorId(torneoId)
-                ?: return
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                "solicitudes",
-                FieldValue.arrayRemove(usuarioId)
-            )
-            .await()
-
-        db.collection("notificaciones")
-            .add(
-                mapOf(
-                    "usuarioId" to usuarioId,
-                    "titulo" to "❌ Solicitud rechazada",
-                    "mensaje" to "Tu solicitud para ${torneo.nombre} fue rechazada",
-                    "fecha" to System.currentTimeMillis(),
-                    "leida" to false
-                )
-            )
-            .await()
-    }
-
-    suspend fun seleccionarGanador(
-        torneoId: String,
-        indiceEnfrentamiento: Int,
-        ganadorUid: String
-    ) {
-
-        val torneo =
-            obtenerTorneoPorId(torneoId)
-                ?: return
-
-        val enfrentamientos =
-            torneo.enfrentamientos.toMutableList()
-
-        enfrentamientos[indiceEnfrentamiento] =
-            enfrentamientos[indiceEnfrentamiento].copy(
-                ganador = ganadorUid
-            )
-
-        db.collection("torneos")
-            .document(torneoId)
-            .update(
-                "enfrentamientos",
-                enfrentamientos
-            )
-            .await()
-
-        db.collection("notificaciones")
-            .add(
-                mapOf(
-                    "usuarioId" to ganadorUid,
-                    "titulo" to "🏆 ¡Ganaste!",
-                    "mensaje" to "Avanzaste a la siguiente ronda en ${torneo.nombre}",
-                    "fecha" to System.currentTimeMillis(),
-                    "leida" to false
-                )
             )
             .await()
     }

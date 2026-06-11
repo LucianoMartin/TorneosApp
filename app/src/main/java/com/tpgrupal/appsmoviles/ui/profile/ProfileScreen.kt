@@ -1,63 +1,70 @@
 package com.tpgrupal.appsmoviles.ui.profile
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.EmojiEvents
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.material.icons.filled.SportsEsports
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.material3.*
+import androidx.compose.material.icons.filled.EmojiEvents
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.SportsEsports
+import androidx.compose.material.icons.automirrored.filled.Logout
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.runtime.*
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
 import com.tpgrupal.appsmoviles.data.repository.TorneoRepository
 import com.tpgrupal.appsmoviles.data.model.Usuario
 import com.tpgrupal.appsmoviles.data.repository.UsuarioRepository
-import android.net.Uri
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import coil.compose.AsyncImage
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
+import com.tpgrupal.appsmoviles.ui.components.ListaItem
 import com.tpgrupal.appsmoviles.data.cloudinary.CloudinaryUploader
 import kotlinx.coroutines.launch
-import androidx.compose.ui.platform.LocalContext
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilScreen(
     onVolver: () -> Unit,
     onCerrarSesion: () -> Unit,
-    onFavoritosClick: () -> Unit
+    onFavoritosClick: () -> Unit,
+    onMisTorneosClick: () -> Unit,
+    onMisPartidasClick: () -> Unit
 ) {
 
     val usuario = Firebase.auth.currentUser
+    var usuarioFirestore by remember { mutableStateOf<Usuario?>(null) }
 
     val context = LocalContext.current
     CloudinaryUploader.init(context)
 
     val scope = rememberCoroutineScope()
 
-    var avatarUrl by remember {
+    var nuevoNombre by remember {
         mutableStateOf("")
     }
 
-    var imagenUri by remember {
-        mutableStateOf<Uri?>(null)
+    var mostrarDialogoNombre by remember {
+        mutableStateOf(false)
+    }
+
+    var avatarUrl by remember {
+        mutableStateOf("")
     }
 
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri ->
-        imagenUri = uri
 
         if (uri != null && usuario != null) {
 
@@ -102,7 +109,7 @@ fun PerfilScreen(
         torneos = TorneoRepository().obtenerTorneos()
         usuario?.let {
 
-            val usuarioFirestore =
+            usuarioFirestore =
                 UsuarioRepository()
                     .obtenerUsuario(it.uid)
 
@@ -126,10 +133,17 @@ fun PerfilScreen(
                             ?.substringBefore("@")
                             ?.replaceFirstChar { c -> c.uppercase() }
                             ?: "Jugador",
-                        email = it.email ?: ""
+                        email = it.email ?: "",
+                        puntos = 0
                     )
                 )
             }
+        }
+
+        if (!mostrarDialogoNombre) {
+
+            nuevoNombre =
+                usuarioFirestore?.nombre ?: ""
         }
     }
 
@@ -151,9 +165,10 @@ fun PerfilScreen(
         }
 
     val nombreUsuario =
-        usuario?.email
-            ?.substringBefore("@")
-            ?.replaceFirstChar { it.uppercase() }
+        usuarioFirestore?.nombre
+            ?: usuario?.email
+                ?.substringBefore("@")
+                ?.replaceFirstChar { it.uppercase() }
             ?: "Jugador"
 
     Scaffold(
@@ -186,6 +201,7 @@ fun PerfilScreen(
             modifier = Modifier
                 .padding(padding)
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
                 .padding(20.dp),
 
             horizontalAlignment = Alignment.CenterHorizontally
@@ -211,16 +227,6 @@ fun PerfilScreen(
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = {
-                    launcher.launch("image/*")
-                }
-            ) {
-                Text("Cambiar foto")
-            }
-
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
@@ -235,6 +241,94 @@ fun PerfilScreen(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = {
+                    launcher.launch("image/*")
+                }
+            ) {
+                Text("Cambiar foto")
+            }
+
+            OutlinedButton(
+                onClick = {
+                    nuevoNombre = nombreUsuario
+                    mostrarDialogoNombre = true
+                }
+            ) {
+                Text("Cambiar nombre")
+            }
+
+            if (mostrarDialogoNombre) {
+
+                AlertDialog(
+
+                    onDismissRequest = {
+                        mostrarDialogoNombre = false
+                    },
+
+                    title = {
+                        Text("Cambiar nombre")
+                    },
+
+                    text = {
+
+                        OutlinedTextField(
+                            value = nuevoNombre,
+                            onValueChange = {
+                                nuevoNombre = it
+                            },
+                            label = {
+                                Text("Nombre")
+                            }
+                        )
+                    },
+
+                    confirmButton = {
+
+                        TextButton(
+
+                            onClick = {
+
+                                usuario?.let { user ->
+
+                                    scope.launch {
+
+                                        UsuarioRepository()
+                                            .actualizarNombre(
+                                                user.uid,
+                                                nuevoNombre
+                                            )
+
+                                        usuarioFirestore =
+                                            usuarioFirestore?.copy(
+                                                nombre = nuevoNombre
+                                            )
+                                    }
+                                }
+
+                                mostrarDialogoNombre = false
+                            }
+                        ) {
+
+                            Text("Guardar")
+                        }
+                    },
+
+                    dismissButton = {
+
+                        TextButton(
+                            onClick = {
+                                mostrarDialogoNombre = false
+                            }
+                        ) {
+                            Text("Cancelar")
+                        }
+                    }
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -301,6 +395,40 @@ fun PerfilScreen(
 
                         Text("Mis favoritos")
                     }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onMisTorneosClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Icon(
+                            Icons.Default.EmojiEvents,
+                            contentDescription = null
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text("Mis torneos")
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = onMisPartidasClick,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+
+                        Icon(
+                            Icons.Default.SportsEsports,
+                            contentDescription = null
+                        )
+
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text("Mis partidas")
+                    }
                 }
             }
 
@@ -321,10 +449,39 @@ fun PerfilScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    Text("🏆 Torneos creados: $cantidadCreados")
-                    Text("❤️ Favoritos obtenidos: $cantidadFavoritos")
-                    Text("🎮 Participaciones: $cantidadParticipaciones")
+                    ListaItem(
+                        Icons.Default.EmojiEvents,
+                        "Torneos creados: $cantidadCreados"
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ListaItem(
+                        Icons.Default.Favorite,
+                        "Favoritos: $cantidadFavoritos"
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    ListaItem(
+                        Icons.Default.SportsEsports,
+                        "Participaciones: $cantidadParticipaciones"
+                    )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                )
+            ) {
+                Text(
+                    text = "💰 ${usuarioFirestore?.puntos ?: 0} puntos",
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    style = MaterialTheme.typography.titleMedium
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -335,7 +492,7 @@ fun PerfilScreen(
             ) {
 
                 Icon(
-                    Icons.Default.Logout,
+                    Icons.AutoMirrored.Filled.Logout,
                     contentDescription = null
                 )
 

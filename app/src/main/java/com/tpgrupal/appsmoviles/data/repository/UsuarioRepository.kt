@@ -1,5 +1,6 @@
 package com.tpgrupal.appsmoviles.data.repository
 
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.tpgrupal.appsmoviles.data.model.Usuario
 import kotlinx.coroutines.tasks.await
@@ -37,6 +38,20 @@ class UsuarioRepository {
         }
     }
 
+    suspend fun actualizarNombre(
+        uid: String,
+        nombre: String
+    ) {
+
+        db.collection("usuarios")
+            .document(uid)
+            .update(
+                "nombre",
+                nombre
+            )
+            .await()
+    }
+
     suspend fun actualizarAvatar(
         uid: String,
         avatarUrl: String
@@ -61,6 +76,22 @@ class UsuarioRepository {
             .update(
                 "puntos",
                 nuevosPuntos
+            )
+            .await()
+    }
+
+    suspend fun sumarPuntos(
+        usuarioId: String,
+        puntos: Int
+    ) {
+
+        db.collection("usuarios")
+            .document(usuarioId)
+            .update(
+                "puntos",
+                FieldValue.increment(
+                    puntos.toLong()
+                )
             )
             .await()
     }

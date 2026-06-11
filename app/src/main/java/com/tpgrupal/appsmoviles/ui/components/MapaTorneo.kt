@@ -93,6 +93,7 @@ fun MapaTorneo(
                 )
 
                 mapView.setMultiTouchControls(true)
+                mapView.setTilesScaledToDpi(true)
 
                 val puntoInicial =
                     GeoPoint(
