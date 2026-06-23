@@ -14,12 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
 import com.tpgrupal.appsmoviles.ui.components.AppToolbar
 import com.tpgrupal.appsmoviles.ui.components.BottomNavBar
-import com.tpgrupal.appsmoviles.ui.home.TorneoCard
+import com.tpgrupal.appsmoviles.ui.components.TorneoCard
 import com.tpgrupal.appsmoviles.ui.navigation.LocalNavController
 
 @Composable

@@ -5,7 +5,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -14,8 +13,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
 import com.tpgrupal.appsmoviles.data.repository.TorneoRepository
-import com.tpgrupal.appsmoviles.ui.components.BottomNavBar
-import com.tpgrupal.appsmoviles.ui.home.TorneoCard
+import com.tpgrupal.appsmoviles.ui.components.TorneoCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

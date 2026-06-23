@@ -1,4 +1,4 @@
-package com.tpgrupal.appsmoviles.ui.home
+package com.tpgrupal.appsmoviles.ui.components
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.data.model.Torneo
-import com.tpgrupal.appsmoviles.ui.components.ListaItem
 import com.tpgrupal.appsmoviles.ui.utils.textoAmigable
 import com.tpgrupal.appsmoviles.ui.theme.TextPrimary
 import com.tpgrupal.appsmoviles.ui.utils.colorEstado

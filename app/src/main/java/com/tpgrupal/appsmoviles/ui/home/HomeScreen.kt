@@ -7,7 +7,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,11 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import com.tpgrupal.appsmoviles.ui.components.AppToolbar
 import com.tpgrupal.appsmoviles.ui.components.BottomNavBar
+import com.tpgrupal.appsmoviles.ui.components.TorneoCard
 import com.tpgrupal.appsmoviles.ui.navigation.LocalNavController
 import com.tpgrupal.appsmoviles.ui.utils.distanciaEnKm
 import com.tpgrupal.appsmoviles.ui.utils.obtenerUbicacionActual
