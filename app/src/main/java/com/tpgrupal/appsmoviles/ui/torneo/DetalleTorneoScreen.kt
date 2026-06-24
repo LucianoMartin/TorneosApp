@@ -847,7 +847,7 @@
             "lol" -> R.drawable.lol
             "mario_kart" -> R.drawable.mario_kart
             "minecraft" -> R.drawable.minecraft
-            "rocket_league" -> R.drawable.rocketleague
+            "rocket_league" -> R.drawable.rocket_league
             "smash" -> R.drawable.smash
             "valorant" -> R.drawable.valorant
 
