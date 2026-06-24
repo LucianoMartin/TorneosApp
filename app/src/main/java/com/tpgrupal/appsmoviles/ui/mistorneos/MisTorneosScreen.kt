@@ -169,7 +169,7 @@ fun MisTorneosScreen(
                     )
 
                     Text(
-                        text = "Torneos organizaste",
+                        text = "Torneos que organizaste",
                         style =
                             MaterialTheme.typography.titleLarge
                     )
