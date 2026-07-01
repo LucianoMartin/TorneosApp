@@ -138,8 +138,9 @@
         val ganadorTorneo =
             if (torneo.estado == EstadoTorneo.FINALIZADO) {
                 torneo.enfrentamientos
-                    .firstOrNull { it.ganador.isNotBlank() }
+                    .maxByOrNull { it.ronda }
                     ?.ganador
+                    ?.takeIf { it.isNotBlank() }
             } else null
 
         LaunchedEffect(torneo.creadorId) {
