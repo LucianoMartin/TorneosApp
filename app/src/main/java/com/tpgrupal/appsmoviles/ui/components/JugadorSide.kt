@@ -15,20 +15,21 @@ import com.tpgrupal.appsmoviles.data.model.Usuario
 @Composable
 fun JugadorSide(
     user: Usuario?,
-    isWinner: Boolean = false
+    isWinner: Boolean = false,
+    avatarDerecha: Boolean = false
 ) {
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        verticalAlignment = Alignment.CenterVertically
     ) {
 
-        AvatarUsuario(
-            avatarUrl = user?.avatarUrl,
-            modifier = Modifier
-        )
+        if (!avatarDerecha) {
+            AvatarUsuario(
+                avatarUrl = user?.avatarUrl
+            )
 
-        Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(6.dp))
+        }
 
         Text(
             text = user?.nombre ?: "Jugador",
@@ -40,5 +41,13 @@ fun JugadorSide(
                 else
                     MaterialTheme.colorScheme.primary
         )
+
+        if (avatarDerecha) {
+            Spacer(Modifier.width(6.dp))
+
+            AvatarUsuario(
+                avatarUrl = user?.avatarUrl
+            )
+        }
     }
 }
